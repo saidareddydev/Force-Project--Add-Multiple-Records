@@ -13,19 +13,19 @@ export default class Addmultiplecontactrecords extends LightningElement {
     targetObjects = [
         {
             label: 'Account',
-            value: 'Contact'
+            value: 'Account'
         }
     ];
 
     displayInfos = {
-        Contact: {
-            additionalFields: ['AccountId.Name']
+        Account: {
+            additionalFields: ['Name']
         }
     };
 
     matchingInfos = {
-        Contact: {
-            additionalFields: [{ fieldPath: 'AccountId.Name' }]
+        Account: {
+            additionalFields: [{ fieldPath: 'Name' }]
         }
     };
     get displayInfo() {
@@ -49,7 +49,7 @@ export default class Addmultiplecontactrecords extends LightningElement {
         this.currentSelectedRecordId = event.detail.recordId;
     }
 
-    selectedTarget = 'Contact';
+    selectedTarget = 'Account';
     currentSelectedRecordId = null;
 
      @wire(getObjectInfo,{
