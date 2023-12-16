@@ -1,4 +1,11 @@
 <template>
+    <!--LOADER-->
+    <template lwc:if={isLoading}>
+        <lightning-spinner
+        variant="brand"
+        size="large"
+        ></lightning-spinner>
+    </template>
     <!--HEADER-->
     <div class="slds-modal__header slds-text-heading_large slds-text-color_success">
         Add Multiple Contacts
@@ -82,6 +89,7 @@
                                 placeholder="Enter Email"
                                 onblur={elementChangeHandler}
                                 name="Email"
+                                data-temp-id={contact.tempId}
                         ></lightning-input>
                     </td>
 
@@ -93,6 +101,7 @@
                                     options={getGenderpicklistvalues}
                                     onblur={elementChangeHandler}
                                     name="GenderIdentity"
+                                    data-temp-id={contact.tempId}
                         ></lightning-combobox>
                     </td>
                     <td>
@@ -110,7 +119,7 @@
         </table>
     </div>
     <!--FOOTER-->
-    <div class="my-modal-footer slds-text-align_right">
+    <div class="slds-modal__footer slds-text-align_right">
         <lightning-button 
             label="Submit" 
             variant="brand"

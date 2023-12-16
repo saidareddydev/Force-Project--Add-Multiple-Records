@@ -1,27 +1,31 @@
-import { LightningElement,wire,track } from 'lwc';
+import { LightningElement,wire,track,api } from 'lwc';
 import CONTACT_OBJECT from "@salesforce/schema/Contact";
 import GENDER_IDENITY_FIELD from "@salesforce/schema/contact.GenderIdentity";
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { getObjectInfo, getPicklistValues } from 'lightning/uiObjectInfoApi';
+import saveMultipleContacts from "@salesforce/apex/AddMultipleContactHandler.saveMultipleContacts";
+import { CloseActionScreenEvent } from "lightning/actions";
 export default class Addmultiplecontactrecords extends LightningElement {
+    @api recordId;
     @track contacts = [];
+    isLoading = false;
 
     targetObjects = [
         {
             label: 'Account',
-            value: 'Account'
+            value: 'Contact'
         }
     ];
 
     displayInfos = {
-        Account: {
-            additionalFields: ['Type']
+        Contact: {
+            additionalFields: ['AccountId.Name']
         }
     };
 
     matchingInfos = {
-        Account: {
-            additionalFields: [{ fieldPath: 'Type' }]
+        Contact: {
+            additionalFields: [{ fieldPath: 'AccountId.Name' }]
         }
     };
     get displayInfo() {
@@ -45,10 +49,10 @@ export default class Addmultiplecontactrecords extends LightningElement {
         this.currentSelectedRecordId = event.detail.recordId;
     }
 
-    selectedTarget = 'Account';
+    selectedTarget = 'Contact';
     currentSelectedRecordId = null;
 
-    @wire(getObjectInfo,{
+     @wire(getObjectInfo,{
         objectApiName : CONTACT_OBJECT
     }) contactobjectinfo;
     @wire(getPicklistValues,{
@@ -76,14 +80,24 @@ export default class Addmultiplecontactrecords extends LightningElement {
     }
     elementChangeHandler(event){
         
-        let contactRow = this.contacts.find(a=>a.tempId==event.target.dataset.tempId);
+        let contactRow = this.contacts.find(a=>a.tempId == event.target.dataset.tempId);
         if(contactRow){
             contactRow[event.target.name] = event.target?.value; 
         }
     }
-    submitClickHandler(event){
+    async submitClickHandler(event){
         const allvalied = this.checkControlsValidity();
         if(allvalied){
+            this.isLoading = true;
+            this.contacts.forEach(a=>a.AccountId=this.recordId);
+            let response = await saveMultipleContacts({contacts : this.contacts});
+            if(response.isSuccess){
+                this.showToast('Contacts Saved Successfully....','Success','success');
+                this.dispatchEvent(new CloseActionScreenEvent());
+            } else{
+                this.showToast('Somthing Went to Worng While Saveing Contacts-'+response.message);
+            }
+            this.isLoading = false;
 
         } else
         {
@@ -93,7 +107,7 @@ export default class Addmultiplecontactrecords extends LightningElement {
     }
     checkControlsValidity(){
         let isValid = true,
-        controls = this.template.querySelectorAll('lightning-input,lightning-combobox,lightning-record-picker');
+        controls = this.template.querySelectorAll('lightning-input,lightning-combobox');
         controls.forEach(field =>{
             if(!field.checkValidity()){
                 field.reportValidity();
